@@ -1,0 +1,7 @@
+{
+  "name": "SmartSpend Offline",
+  "description": "A profitable, offline-first expense tracker PWA with freemium features.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
