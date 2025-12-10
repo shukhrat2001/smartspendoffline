@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Check, Star, Lock } from 'lucide-react';
 import { cn } from '../services/utils';
+import { useTranslation } from '../services/i18n';
 
 interface PremiumModalProps {
   isOpen: boolean;
@@ -10,6 +11,8 @@ interface PremiumModalProps {
 }
 
 export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, triggerReason, onUpgrade }) => {
+  const { t } = useTranslation();
+
   if (!isOpen) return null;
 
   return (
@@ -29,30 +32,30 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, tri
               <Star size={10} fill="currentColor" /> PREMIUM
             </span>
           </div>
-          <h2 className="text-2xl font-bold mb-1">Unlock Full Power</h2>
+          <h2 className="text-2xl font-bold mb-1">{t('unlock_full')}</h2>
           <p className="text-indigo-100 text-sm opacity-90">
-            {triggerReason || "You've hit a free limit."}
+            {triggerReason || t('hit_limit')}
           </p>
         </div>
 
         {/* Content */}
         <div className="p-6">
           <div className="space-y-4 mb-8">
-            <FeatureRow text="Unlimited expense history" />
-            <FeatureRow text="Unlimited receipt photos" />
-            <FeatureRow text="Custom categories" />
-            <FeatureRow text="Advanced reports & insights" />
-            <FeatureRow text="Export to CSV/PDF" />
-            <FeatureRow text="Cloud backup & Sync" />
+            <FeatureRow text={t('feat_history')} />
+            <FeatureRow text={t('feat_receipts')} />
+            <FeatureRow text={t('feat_custom_cat')} />
+            <FeatureRow text={t('feat_reports')} />
+            <FeatureRow text={t('feat_export')} />
+            <FeatureRow text={t('feat_cloud')} />
           </div>
 
           <div className="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-100 text-center">
-             <p className="text-sm text-gray-500 mb-1">Start your 7-day free trial</p>
+             <p className="text-sm text-gray-500 mb-1">{t('start_trial')}</p>
              <div className="flex items-baseline justify-center gap-1">
                <span className="text-3xl font-bold text-gray-900">$4.99</span>
-               <span className="text-gray-500">/month</span>
+               <span className="text-gray-500">{t('per_month')}</span>
              </div>
-             <p className="text-xs text-green-600 font-medium mt-1">or save $10 with annual plan</p>
+             <p className="text-xs text-green-600 font-medium mt-1">{t('annual_save')}</p>
           </div>
 
           <button
@@ -60,11 +63,11 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, tri
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-200 transition-all transform active:scale-95 flex items-center justify-center gap-2"
           >
             <Star size={18} fill="currentColor" className="text-yellow-300" />
-            Start Free Trial
+            {t('start_free_trial')}
           </button>
           
           <p className="text-center text-xs text-gray-400 mt-4">
-            Cancel anytime. No questions asked.
+            {t('cancel_anytime')}
           </p>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { Camera, X, Check, Calendar, Tag, DollarSign, FileText, Plus } from 'luc
 import { db, checkPremiumLimit } from '../services/db';
 import { compressImage, cn } from '../services/utils';
 import { Category } from '../types';
+import { useTranslation } from '../services/i18n';
 
 interface AddExpenseProps {
   onCancel: () => void;
@@ -12,6 +13,7 @@ interface AddExpenseProps {
 }
 
 export const AddExpense: React.FC<AddExpenseProps> = ({ onCancel, onSave, onTriggerPremium }) => {
+  const { t, getCategoryName } = useTranslation();
   const [amount, setAmount] = useState('');
   const [categoryId, setCategoryId] = useState('food');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -28,7 +30,7 @@ export const AddExpense: React.FC<AddExpenseProps> = ({ onCancel, onSave, onTrig
     // Premium Check: Photo limit
     const canAddPhoto = await checkPremiumLimit('photo');
     if (!canAddPhoto && !image) { // If replacing, it's fine. If adding new, check limit.
-      onTriggerPremium('Unlock unlimited receipt photos with Premium.');
+      onTriggerPremium(t('feat_receipts'));
       return;
     }
 
@@ -63,7 +65,7 @@ export const AddExpense: React.FC<AddExpenseProps> = ({ onCancel, onSave, onTrig
       // Simple analytic hook
       const count = await db.expenses.count();
       if (count === 50) {
-        onTriggerPremium("You've logged 50 expenses! Upgrade to keep seeing full history.");
+        onTriggerPremium(t('hit_limit'));
       }
 
       onSave();
@@ -79,11 +81,11 @@ export const AddExpense: React.FC<AddExpenseProps> = ({ onCancel, onSave, onTrig
      // Premium Check: Category limit
      const canAdd = await checkPremiumLimit('category');
      if (!canAdd) {
-       onTriggerPremium('Upgrade to add unlimited custom categories.');
+       onTriggerPremium(t('feat_custom_cat'));
        return;
      }
      // In a real app, this would open a dialog. Here we mock it.
-     const name = prompt("Enter new category name:");
+     const name = prompt(t('enter_cat_name'));
      if (name) {
        const id = name.toLowerCase().replace(/\s+/g, '-');
        await db.categories.add({
@@ -99,7 +101,7 @@ export const AddExpense: React.FC<AddExpenseProps> = ({ onCancel, onSave, onTrig
   return (
     <div className="h-full bg-white flex flex-col">
       <div className="px-6 py-6 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
-        <h1 className="text-xl font-bold text-gray-900">Add Expense</h1>
+        <h1 className="text-xl font-bold text-gray-900">{t('add_expense')}</h1>
         <button onClick={onCancel} className="p-2 text-gray-400 hover:text-gray-600">
           <X size={24} />
         </button>
@@ -109,7 +111,7 @@ export const AddExpense: React.FC<AddExpenseProps> = ({ onCancel, onSave, onTrig
         
         {/* Amount Input */}
         <div>
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Amount</label>
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{t('amount')}</label>
           <div className="relative">
             <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={24} />
             <input 
@@ -128,13 +130,13 @@ export const AddExpense: React.FC<AddExpenseProps> = ({ onCancel, onSave, onTrig
         {/* Category Selection */}
         <div>
            <div className="flex justify-between items-center mb-2">
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</label>
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('category')}</label>
             <button 
               type="button" 
               onClick={handleAddCategory}
               className="text-xs text-indigo-600 font-medium flex items-center gap-1"
             >
-              <Plus size={12} /> New Category
+              <Plus size={12} /> {t('new_category')}
             </button>
            </div>
            
@@ -151,7 +153,9 @@ export const AddExpense: React.FC<AddExpenseProps> = ({ onCancel, onSave, onTrig
                       : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
                   )}
                 >
-                  <div className="mb-1 text-sm font-medium truncate w-full text-center">{cat.name}</div>
+                  <div className="mb-1 text-sm font-medium truncate w-full text-center">
+                    {getCategoryName(cat.id, cat.name)}
+                  </div>
                 </button>
               ))}
            </div>
@@ -160,7 +164,7 @@ export const AddExpense: React.FC<AddExpenseProps> = ({ onCancel, onSave, onTrig
         {/* Date & Note */}
         <div className="grid grid-cols-1 gap-6">
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Date</label>
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{t('date')}</label>
             <div className="relative">
               <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input 
@@ -173,14 +177,14 @@ export const AddExpense: React.FC<AddExpenseProps> = ({ onCancel, onSave, onTrig
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Note (Optional)</label>
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{t('note_optional')}</label>
             <div className="relative">
               <FileText className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input 
                 type="text"
                 value={note}
                 onChange={e => setNote(e.target.value)}
-                placeholder="What was this for?"
+                placeholder={t('what_for')}
                 className="w-full pl-12 pr-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-gray-900 focus:border-indigo-500 outline-none"
               />
             </div>
@@ -189,7 +193,7 @@ export const AddExpense: React.FC<AddExpenseProps> = ({ onCancel, onSave, onTrig
 
         {/* Receipt Photo */}
         <div>
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Receipt</label>
+          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{t('receipt')}</label>
           <div className="relative">
             <input 
               type="file" 
@@ -207,7 +211,7 @@ export const AddExpense: React.FC<AddExpenseProps> = ({ onCancel, onSave, onTrig
               >
                 <div className="flex flex-col items-center text-gray-500">
                   <Camera size={24} className="mb-2" />
-                  <span className="text-sm font-medium">Take Photo</span>
+                  <span className="text-sm font-medium">{t('take_photo')}</span>
                 </div>
               </label>
             ) : (
@@ -233,10 +237,10 @@ export const AddExpense: React.FC<AddExpenseProps> = ({ onCancel, onSave, onTrig
           disabled={!amount || isSaving}
           className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition-all flex items-center justify-center gap-2"
         >
-          {isSaving ? 'Saving...' : (
+          {isSaving ? t('saving') : (
             <>
               <Check size={20} strokeWidth={3} />
-              Save Expense
+              {t('save_expense')}
             </>
           )}
         </button>

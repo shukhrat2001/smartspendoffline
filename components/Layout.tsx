@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Wifi, WifiOff, Home, PlusCircle, PieChart, Clock, Settings } from 'lucide-react';
 import { AppView } from '../types';
 import { cn } from '../services/utils';
+import { useTranslation } from '../services/i18n';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -11,6 +12,7 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children, currentView, onChangeView }) => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -35,7 +37,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onChangeV
         )}
       >
         <WifiOff size={12} />
-        <span>OFFLINE MODE • Changes saved locally</span>
+        <span>{t('offline_mode')}</span>
       </div>
 
       {/* Main Content Area */}
@@ -48,13 +50,13 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onChangeV
         <div className="flex justify-around items-center h-16">
           <NavItem 
             icon={<Home size={22} />} 
-            label="Home" 
+            label={t('nav_home')} 
             isActive={currentView === AppView.DASHBOARD} 
             onClick={() => onChangeView(AppView.DASHBOARD)} 
           />
           <NavItem 
             icon={<Clock size={22} />} 
-            label="History" 
+            label={t('nav_history')} 
             isActive={currentView === AppView.HISTORY} 
             onClick={() => onChangeView(AppView.HISTORY)} 
           />
@@ -71,13 +73,13 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onChangeV
 
           <NavItem 
             icon={<PieChart size={22} />} 
-            label="Reports" 
+            label={t('nav_reports')} 
             isActive={currentView === AppView.REPORTS} 
             onClick={() => onChangeView(AppView.REPORTS)} 
           />
           <NavItem 
             icon={<Settings size={22} />} 
-            label="Settings" 
+            label={t('nav_settings')} 
             isActive={currentView === AppView.SETTINGS} 
             onClick={() => onChangeView(AppView.SETTINGS)} 
           />

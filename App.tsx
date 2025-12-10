@@ -5,19 +5,35 @@ import { AddExpense } from './pages/AddExpense';
 import { History } from './pages/History';
 import { Reports } from './pages/Reports';
 import { PremiumModal } from './components/PremiumModal';
-import { AppView } from './types';
+import { AppView, Language } from './types';
 import { db } from './services/db';
+import { useTranslation } from './services/i18n';
+
+// ------------------------------------------------------------------
+// CONFIGURATION: Replace this with your actual Stripe Payment Link
+// ------------------------------------------------------------------
+const STRIPE_PAYMENT_LINK = ""; 
 
 const App: React.FC = () => {
+  const { t, language, setLanguage } = useTranslation();
   const [currentView, setCurrentView] = useState<AppView>(AppView.DASHBOARD);
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [premiumReason, setPremiumReason] = useState('');
 
-  // Initial seeding check
   useEffect(() => {
-    // This is just to ensure DB is open
-    db.open().catch(err => console.error(err));
-  }, []);
+    // 1. Ensure DB is open
+    (db as any).open().catch((err: any) => console.error(err));
+
+    // 2. Check for Stripe Success Redirect
+    const query = new URLSearchParams(window.location.search);
+    if (query.get('success') === 'true') {
+      db.settings.update(1, { isPremium: true }).then(() => {
+        window.history.replaceState({}, '', window.location.pathname);
+        alert(t('payment_success'));
+        window.location.reload();
+      });
+    }
+  }, [t]);
 
   const handleTriggerPremium = (reason: string) => {
     setPremiumReason(reason);
@@ -25,15 +41,20 @@ const App: React.FC = () => {
   };
 
   const handleUpgrade = async () => {
-    // Mock Stripe Integration
-    // In real app: Redirect to Stripe Checkout
-    const isConfirmed = window.confirm("Mock Payment: Confirm $4.99 subscription?");
-    if (isConfirmed) {
-      await db.settings.update(1, { isPremium: true }); // Assuming ID 1 for single user
-      setIsPremiumModalOpen(false);
-      alert("Welcome to Premium! All features unlocked.");
-      window.location.reload(); // Simple reload to refresh all state
+    if (!STRIPE_PAYMENT_LINK) {
+      const isConfirmed = window.confirm(
+        "DEV MODE: No Stripe Link Configured.\n\nClick OK to simulate a successful payment.\nClick Cancel to simulate abandonment."
+      );
+      
+      if (isConfirmed) {
+        await db.settings.update(1, { isPremium: true });
+        setIsPremiumModalOpen(false);
+        alert(t('welcome_premium'));
+        window.location.reload();
+      }
+      return;
     }
+    window.location.href = STRIPE_PAYMENT_LINK;
   };
 
   const renderView = () => {
@@ -49,19 +70,50 @@ const App: React.FC = () => {
       case AppView.SETTINGS:
         return (
           <div className="p-6">
-            <h1 className="text-2xl font-bold mb-4">Settings</h1>
+            <h1 className="text-2xl font-bold mb-4">{t('nav_settings')}</h1>
             <button 
-              onClick={() => handleTriggerPremium("Manage subscription")}
-              className="w-full bg-indigo-600 text-white p-4 rounded-xl font-bold mb-4"
+              onClick={() => handleTriggerPremium(t('upgrade_manage'))}
+              className="w-full bg-indigo-600 text-white p-4 rounded-xl font-bold mb-6"
             >
-              Upgrade / Manage Plan
+              {t('upgrade_manage')}
             </button>
-            <div className="space-y-2 text-sm text-gray-500">
+            
+            <div className="space-y-4 text-sm text-gray-500">
+               
+               {/* Language Selector */}
                <div className="p-4 bg-white rounded-xl border border-gray-200">
-                 <p className="font-bold text-gray-900">Data Management</p>
-                 <p className="mt-1">Clear Data</p>
+                  <p className="font-bold text-gray-900 mb-3">{t('select_language')}</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(['en', 'ru', 'tg'] as Language[]).map(lang => (
+                      <button 
+                        key={lang}
+                        onClick={() => setLanguage(lang)}
+                        className={`py-2 px-3 rounded-lg text-sm font-medium border transition-colors ${
+                          language === lang 
+                            ? 'bg-indigo-50 border-indigo-500 text-indigo-700' 
+                            : 'bg-gray-50 border-gray-200 text-gray-600'
+                        }`}
+                      >
+                        {lang === 'en' ? 'English' : lang === 'ru' ? 'Русский' : 'Тоҷикӣ'}
+                      </button>
+                    ))}
+                  </div>
                </div>
-               <p className="text-center mt-6 text-xs">Version 1.0.0 (Offline Capable)</p>
+
+               <div className="p-4 bg-white rounded-xl border border-gray-200">
+                 <p className="font-bold text-gray-900">{t('data_management')}</p>
+                 <button 
+                    onClick={() => {
+                      if(window.confirm(t('delete_confirm'))) {
+                        (db as any).delete().then(() => window.location.reload());
+                      }
+                    }}
+                    className="text-red-500 mt-2 font-medium"
+                 >
+                   {t('reset_app')}
+                 </button>
+               </div>
+               <p className="text-center mt-6 text-xs">{t('app_version')}</p>
             </div>
           </div>
         );

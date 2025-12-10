@@ -10,20 +10,21 @@ export class ExpenseDatabase extends Dexie {
     super('SmartSpendDB');
     
     // Define schema
-    this.version(1).stores({
+    (this as any).version(1).stores({
       expenses: '++id, date, categoryId, synced',
       categories: 'id, isCustom',
       settings: '++id'
     });
 
     // Populate default data if empty
-    this.on('populate', () => {
+    (this as any).on('populate', () => {
       this.categories.bulkAdd(DEFAULT_CATEGORIES);
       this.settings.add({
         isPremium: false,
         currency: 'USD',
         theme: 'light',
-        trialStartDate: new Date()
+        trialStartDate: new Date(),
+        language: 'en'
       });
     });
   }

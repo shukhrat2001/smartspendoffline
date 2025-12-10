@@ -1,3 +1,5 @@
+export type Language = 'en' | 'ru' | 'tg';
+
 export interface Expense {
   id?: number;
   amount: number;
@@ -23,6 +25,7 @@ export interface UserSettings {
   trialStartDate?: Date;
   currency: string;
   theme: 'light' | 'dark';
+  language: Language;
 }
 
 export enum AppView {
